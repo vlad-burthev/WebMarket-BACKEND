@@ -16,29 +16,33 @@ const generateJwt = (id, email, role, phoneNumber, firstName, lastName) => {
 };
 
 export const login = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ where: { email } });
 
-  if (!existingUser) {
-    return res.json({ message: "Такого пользователя не существует" });
+    if (!existingUser) {
+      return res.json({ message: "Такого пользователя не существует" });
+    }
+
+    let comparePassword = bcrypt.compareSync(password, existingUser.password);
+    if (!comparePassword) {
+      return res.json({ message: "Incorrect password or email" });
+    }
+
+    const token = generateJwt(
+      existingUser.id,
+      email,
+      existingUser.phoneNumber,
+      existingUser.firstName,
+      existingUser.lastName,
+      existingUser.role
+    );
+
+    return res.json({ existingUser, token });
+  } catch (error) {
+    return res.json({ message: error.message });
   }
-
-  let comparePassword = bcrypt.compareSync(password, existingUser.password);
-  if (!comparePassword) {
-    return res.json({ message: "Неверный пароль или email" });
-  }
-
-  const token = generateJwt(
-    existingUser.id,
-    email,
-    existingUser.phoneNumber,
-    existingUser.firstName,
-    existingUser.lastName,
-    existingUser.role
-  );
-
-  return res.json({ existingUser, token });
 };
 
 export const registration = async (req, res) => {
@@ -78,6 +82,6 @@ export const registration = async (req, res) => {
 
     return res.json({ token, createUser, createOrder, createBasket });
   } catch (error) {
-    console.log(error);
+    return res.json({ message: error.message });
   }
 };
