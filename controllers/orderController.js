@@ -1,9 +1,9 @@
-import { Basket, BasketDevice } from "../models/models.js";
+import { Order, OrderDevice } from "../models/models.js";
 import { configDotenv } from "dotenv";
 import { decodeToken } from "../helpers/decodeToken.js";
 configDotenv();
 
-export const addDeviceToBasket = async (req, res) => {
+export const addDeviceToOrder = async (req, res) => {
   try {
     // Получаем данные о девайсе из req.body
     const {
@@ -22,13 +22,13 @@ export const addDeviceToBasket = async (req, res) => {
     // Декодируем токен
     const user = decodeToken(token);
 
-    // Получаем id пользователя(user.id) и находим корзину связанную с этим id
-    const basket = await Basket.findOne({
+    // Получаем id пользователя(user.id) и находим order связанную с этим id
+    const order = await Order.findOne({
       where: { userId: user.id },
     });
 
     // Добавляем device и передаём id корзины
-    const addedDeviceToBasket = await BasketDevice.create({
+    const addedDeviceToOrder = await OrderDevice.create({
       deviceId,
       deviceSlug,
       deviceName,
@@ -36,16 +36,16 @@ export const addDeviceToBasket = async (req, res) => {
       deviceImg,
       deviceTypeId,
       deviceBrandId,
-      basketId: basket.id,
+      orderId: order.id,
     });
 
-    return res.json(addedDeviceToBasket);
+    return res.json(addedDeviceToOrder);
   } catch (error) {
     return res.json({ message: error.message });
   }
 };
 
-export const deleteDevicesFromBasket = async (req, res) => {
+export const deleteDevicesFromOrder = async (req, res) => {
   try {
     // Получаем данные о девайсе из req.body
     const { deviceId, count = 1 } = req.body;
@@ -57,28 +57,28 @@ export const deleteDevicesFromBasket = async (req, res) => {
     const user = decodeToken(token);
 
     // Получаем id пользователя (user.id) и находим корзину связанную с этим id
-    await Basket.findOne({
+    await Order.findOne({
       where: { userId: user.id },
     });
 
-    const existingDevice = await BasketDevice.findOne({ where: deviceId });
+    const existingDevice = await OrderDevice.findOne({ where: deviceId });
     if (!existingDevice) {
       return res.json({ message: "This device was not found in the cart." });
     }
 
-    const existingDeviceCount = await BasketDevice.count({
+    const existingDeviceCount = await OrderDevice.count({
       where: { deviceId },
     });
     if (existingDeviceCount < count) {
       return res.json({
         message:
-          "You requested to delete more devices than there are in the basket.",
+          "You requested to delete more devices than there are in the order.",
       });
     }
 
     // Удаляем указанное количество девайсов с определенным deviceId из корзины
     for (let i = 0; i < count; i++) {
-      const existingDevice = await BasketDevice.findOne({
+      const existingDevice = await OrderDevice.findOne({
         where: { deviceId },
       });
 
@@ -93,15 +93,15 @@ export const deleteDevicesFromBasket = async (req, res) => {
   }
 };
 
-export const getBasket = async (req, res) => {
+export const getOrder = async (req, res) => {
   try {
     const token = req.headers.authorization;
     const user = decodeToken(token);
-    const basket = await Basket.findOne({
+    const order = await Order.findOne({
       where: { userId: user.id },
-      include: [{ model: BasketDevice, as: "basket_device" }],
+      include: [{ model: OrderDevice, as: "order_device" }],
     });
-    return res.json(basket);
+    return res.json(order);
   } catch (error) {
     return res.json({ message: error.message });
   }

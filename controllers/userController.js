@@ -1,4 +1,6 @@
 import { configDotenv } from "dotenv";
+import { Op } from "sequelize";
+
 import { Basket, Order, User } from "../models/models.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -50,7 +52,11 @@ export const registration = async (req, res) => {
     const { email, phoneNumber, firstName, lastName, password, role } =
       req.body;
 
-    const existingUser = await User.findOne({ where: { email, phoneNumber } });
+    const existingUser = await User.findOne({
+      where: {
+        [Op.or]: [{ phoneNumber }, { email }],
+      },
+    });
 
     if (existingUser) {
       return res.json({

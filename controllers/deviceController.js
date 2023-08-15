@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import * as path from "path";
-import { Device, DeviceInfo } from "../models/models.js";
+import { Device, DeviceInfo, Rating } from "../models/models.js";
 
 import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
@@ -51,12 +51,24 @@ export const createDevice = async (req, res) => {
 export const getOneDevice = async (req, res) => {
   try {
     const { slug } = req.params;
-    const existingDevice = await Device.findOne({ where: { slug } });
-    if (!existingDevice) {
+    const device = await Device.findOne({
+      where: { slug },
+      include: [
+        {
+          model: DeviceInfo,
+          as: "info",
+        },
+        {
+          model: Rating,
+          foreignKey: "deviceId",
+        },
+      ],
+    });
+    if (!device) {
       return res.json({ message: "This device does not exist." });
     }
 
-    return res.json(existingDevice);
+    return res.json(device);
   } catch (error) {
     return res.json({ message: error.message });
   }
@@ -64,7 +76,18 @@ export const getOneDevice = async (req, res) => {
 
 export const getAllDevices = async (req, res) => {
   try {
-    const devices = await Device.findAndCountAll();
+    const devices = await Device.findAndCountAll({
+      include: [
+        {
+          model: DeviceInfo,
+          as: "info",
+        },
+        {
+          model: Rating,
+          foreignKey: "deviceId",
+        },
+      ],
+    });
     return res.json(devices);
   } catch (error) {
     return res.json({ message: error.message });

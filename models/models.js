@@ -34,8 +34,14 @@ export const Order = sequelize.define("order", {
 
 export const OrderDevice = sequelize.define("order_device", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
-  orderDate: { type: DataTypes.DATE, allowNull: false },
   //orderId
+  deviceId: { type: DataTypes.INTEGER, allowNull: false },
+  deviceSlug: { type: DataTypes.STRING, allowNull: false },
+  deviceName: { type: DataTypes.STRING, allowNull: false },
+  devicePrice: { type: DataTypes.INTEGER, allowNull: false },
+  deviceImg: { type: DataTypes.STRING, allowNull: false },
+  deviceTypeId: { type: DataTypes.INTEGER, allowNull: false },
+  deviceBrandId: { type: DataTypes.INTEGER, allowNull: false },
 });
 
 export const Device = sequelize.define("device", {
@@ -51,12 +57,9 @@ export const Device = sequelize.define("device", {
 export const Rating = sequelize.define("rating", {
   id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   rate: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+  userId: { type: DataTypes.INTEGER, allowNull: false },
   //deviceId
 });
-
-// Связь между Device и Rating
-Device.hasMany(Rating, { foreignKey: "deviceId" });
-Rating.belongsTo(Device, { foreignKey: "deviceId" });
 
 export const Type = sequelize.define("type", {
   id: { type: DataTypes.INTEGER(30), autoIncrement: true, primaryKey: true },
@@ -77,6 +80,10 @@ export const DeviceInfo = sequelize.define("device_info", {
 export const TypeBrand = sequelize.define("type_brand", {
   id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
 });
+
+// Связь между Device и Rating
+Device.hasMany(Rating, { foreignKey: "deviceId" });
+Rating.belongsTo(Device, { foreignKey: "deviceId" });
 
 User.hasOne(Basket);
 Basket.belongsTo(User);

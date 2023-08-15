@@ -1,10 +1,10 @@
 import { Router } from "express";
+import { chekAuthMiddleware } from "../middleware/chekAuthMiddleware.js";
 import {
   addDeviceToBasket,
   deleteDevicesFromBasket,
   getBasket,
 } from "../controllers/basketController.js";
-import { chekAuthMiddleware } from "../middleware/chekAuthMiddleware.js";
 
 const basketRouter = Router();
 
