@@ -21,7 +21,7 @@ export const BasketDevice = sequelize.define("basket_device", {
   //basketId
   deviceId: { type: DataTypes.INTEGER, allowNull: false },
   deviceSlug: { type: DataTypes.STRING, allowNull: false },
-  deviceName: { type: DataTypes.STRING, unique: true, allowNull: false },
+  deviceName: { type: DataTypes.STRING, allowNull: false },
   devicePrice: { type: DataTypes.INTEGER, allowNull: false },
   deviceImg: { type: DataTypes.STRING, allowNull: false },
   deviceTypeId: { type: DataTypes.INTEGER, allowNull: false },
@@ -44,6 +44,8 @@ export const Device = sequelize.define("device", {
   name: { type: DataTypes.STRING, allowNull: false, unique: true },
   price: { type: DataTypes.INTEGER, allowNull: false },
   img: { type: DataTypes.STRING, allowNull: false, unique: true },
+  brandId: { type: DataTypes.INTEGER, allowNull: false },
+  typeId: { type: DataTypes.INTEGER, allowNull: false },
 });
 
 export const Rating = sequelize.define("rating", {

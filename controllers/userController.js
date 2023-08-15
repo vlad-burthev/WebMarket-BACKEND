@@ -22,7 +22,7 @@ export const login = async (req, res) => {
     const existingUser = await User.findOne({ where: { email } });
 
     if (!existingUser) {
-      return res.json({ message: "Такого пользователя не существует" });
+      return res.json({ message: "This user does not exist" });
     }
 
     let comparePassword = bcrypt.compareSync(password, existingUser.password);
@@ -33,10 +33,10 @@ export const login = async (req, res) => {
     const token = generateJwt(
       existingUser.id,
       email,
+      existingUser.role,
       existingUser.phoneNumber,
       existingUser.firstName,
-      existingUser.lastName,
-      existingUser.role
+      existingUser.lastName
     );
 
     return res.json({ existingUser, token });
@@ -74,13 +74,29 @@ export const registration = async (req, res) => {
     const token = generateJwt(
       createUser.id,
       createUser.email,
+      createUser.role,
       createUser.phoneNumber,
       createUser.firstName,
-      createUser.lastName,
-      createUser.role
+      createUser.lastName
     );
 
     return res.json({ token, createUser, createOrder, createBasket });
+  } catch (error) {
+    return res.json({ message: error.message });
+  }
+};
+
+export const check = (req, res) => {
+  try {
+    const token = generateJwt(
+      req.user.id,
+      req.user.email,
+      req.user.role,
+      req.user.phoneNumber,
+      req.user.firstName,
+      req.user.lastName
+    );
+    return res.json({ token, createUser, createBasket, createOrder });
   } catch (error) {
     return res.json({ message: error.message });
   }

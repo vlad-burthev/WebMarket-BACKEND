@@ -1,9 +1,15 @@
 import { Router } from "express";
+import {
+  addDeviceToBasket,
+  deleteDevicesFromBasket,
+  getBasket,
+} from "../controllers/basketController.js";
+import { chekAuthMiddleware } from "../middleware/chekAuthMiddleware.js";
 
 const basketRouter = Router();
 
-basketRouter.get("/:user_id");
-basketRouter.post("/:user_id");
-basketRouter.delete("/:user_id/:device_id");
+basketRouter.get("/", chekAuthMiddleware, getBasket);
+basketRouter.post("/", chekAuthMiddleware, addDeviceToBasket);
+basketRouter.delete("/", chekAuthMiddleware, deleteDevicesFromBasket);
 
 export default basketRouter;
