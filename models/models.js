@@ -62,7 +62,7 @@ export const Rating = sequelize.define("rating", {
 });
 
 export const Type = sequelize.define("type", {
-  id: { type: DataTypes.INTEGER(30), autoIncrement: true, primaryKey: true },
+  id: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
   name: { type: DataTypes.STRING(30), allowNull: false, unique: true },
 });
 

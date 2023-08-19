@@ -3,6 +3,7 @@ import * as path from "path";
 import { Device, DeviceInfo, Rating } from "../models/models.js";
 
 import { fileURLToPath } from "url";
+import { json } from "sequelize";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -13,7 +14,7 @@ const convertToSlug = (name) => {
     .replace(/^_+|_+$/g, "");
 };
 
-export const createDevice = async (req, res) => {
+export const createDevice = async (req, res, next) => {
   try {
     const { name, price, typeId, brandId, info } = req.body;
 
@@ -42,13 +43,13 @@ export const createDevice = async (req, res) => {
       });
     }
 
-    return res.json({ createDevice });
+    return res.status(200).json({ createDevice });
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };
 
-export const getOneDevice = async (req, res) => {
+export const getOneDevice = async (req, res, next) => {
   try {
     const { slug } = req.params;
     const device = await Device.findOne({
@@ -65,31 +66,61 @@ export const getOneDevice = async (req, res) => {
       ],
     });
     if (!device) {
-      return res.json({ message: "This device does not exist." });
+      return next(ApiError.badRequest("This device does not exist."));
     }
 
-    return res.json(device);
+    return res.status(200).json(device);
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };
 
 export const getAllDevices = async (req, res) => {
   try {
-    const devices = await Device.findAndCountAll({
-      include: [
-        {
-          model: DeviceInfo,
-          as: "info",
-        },
-        {
-          model: Rating,
-          foreignKey: "deviceId",
-        },
-      ],
-    });
-    return res.json(devices);
+    const { page = 1, limit = 24, typeId, brandId } = req.query;
+    let offset = page * limit - limit;
+    let devices;
+    if (!brandId && !typeId) {
+      devices = await Device.findAndCountAll({ limit, offset });
+    }
+    if (brandId && !typeId) {
+      devices = await Device.findAndCountAll({
+        where: { brandId },
+        limit,
+        offset,
+      });
+    }
+    if (!brandId && typeId) {
+      devices = await Device.findAndCountAll({
+        where: { typeId },
+        limit,
+        offset,
+      });
+    }
+    if (brandId && typeId) {
+      devices = await Device.findAndCountAll({
+        where: { typeId, brandId },
+        limit,
+        offset,
+        brandId,
+      });
+    }
+
+    return res.status(200).json(devices);
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
+  }
+};
+
+export const deleteDevice = async () => {
+  try {
+    const { slug } = req.params;
+    const device = await Device.findOne({ where: { slug } });
+    await device.destroy();
+    return res
+      .status(204)
+      .json(`Device '${device.name}' successfully destroy.`);
+  } catch (error) {
+    return next(ApiError.badRequest(error.message));
   }
 };

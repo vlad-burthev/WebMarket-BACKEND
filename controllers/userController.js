@@ -4,6 +4,7 @@ import { Op } from "sequelize";
 import { Basket, Order, User } from "../models/models.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import ApiError from "../error/ApiError.js";
 
 configDotenv();
 
@@ -17,19 +18,19 @@ const generateJwt = (id, email, role, phoneNumber, firstName, lastName) => {
   );
 };
 
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     const existingUser = await User.findOne({ where: { email } });
 
     if (!existingUser) {
-      return res.json({ message: "This user does not exist" });
+      return next(ApiError.badRequest("This user does not exist"));
     }
 
     let comparePassword = bcrypt.compareSync(password, existingUser.password);
     if (!comparePassword) {
-      return res.json({ message: "Incorrect password or email" });
+      return next(ApiError.badRequest("Incorrect password or email"));
     }
 
     const token = generateJwt(
@@ -41,13 +42,13 @@ export const login = async (req, res) => {
       existingUser.lastName
     );
 
-    return res.json({ existingUser, token });
+    return res.status(200).json({ existingUser, token });
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };
 
-export const registration = async (req, res) => {
+export const registration = async (req, res, next) => {
   try {
     const { email, phoneNumber, firstName, lastName, password, role } =
       req.body;
@@ -59,9 +60,9 @@ export const registration = async (req, res) => {
     });
 
     if (existingUser) {
-      return res.json({
-        message: "User with this email or phone will be register",
-      });
+      return next(
+        ApiError.badRequest("User with this email or phone will be register")
+      );
     }
 
     let hashPassword = bcrypt.hashSync(password, 5);
@@ -86,9 +87,11 @@ export const registration = async (req, res) => {
       createUser.lastName
     );
 
-    return res.json({ token, createUser, createOrder, createBasket });
+    return res
+      .status(200)
+      .json({ token, createUser, createOrder, createBasket });
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };
 
@@ -102,8 +105,8 @@ export const check = (req, res) => {
       req.user.firstName,
       req.user.lastName
     );
-    return res.json({ token, createUser, createBasket, createOrder });
+    return res.status(200).json({ token });
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };

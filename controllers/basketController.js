@@ -1,6 +1,7 @@
 import { Basket, BasketDevice } from "../models/models.js";
 import { configDotenv } from "dotenv";
 import { decodeToken } from "../helpers/decodeToken.js";
+import ApiError from "../error/ApiError.js";
 configDotenv();
 
 export const addDeviceToBasket = async (req, res) => {
@@ -41,7 +42,7 @@ export const addDeviceToBasket = async (req, res) => {
 
     return res.json(addedDeviceToBasket);
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };
 
@@ -63,17 +64,20 @@ export const deleteDevicesFromBasket = async (req, res) => {
 
     const existingDevice = await BasketDevice.findOne({ where: deviceId });
     if (!existingDevice) {
-      return res.json({ message: "This device was not found in the cart." });
+      return next(
+        ApiError.badRequest("This device was not found in the cart.")
+      );
     }
 
     const existingDeviceCount = await BasketDevice.count({
       where: { deviceId },
     });
     if (existingDeviceCount < count) {
-      return res.json({
-        message:
-          "You requested to delete more devices than there are in the basket.",
-      });
+      return next(
+        ApiError.badRequest(
+          "You requested to delete more devices than there are in the basket."
+        )
+      );
     }
 
     // Удаляем указанное количество девайсов с определенным deviceId из корзины
@@ -87,9 +91,9 @@ export const deleteDevicesFromBasket = async (req, res) => {
       }
     }
 
-    return res.json({ message: "Device(s) successfuly destoy" });
+    return res.status(204).json({ message: "Device(s) successfuly destoy" });
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };
 
@@ -101,8 +105,8 @@ export const getBasket = async (req, res) => {
       where: { userId: user.id },
       include: [{ model: BasketDevice, as: "basket_device" }],
     });
-    return res.json(basket);
+    return res.status(200).json(basket);
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };

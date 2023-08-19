@@ -11,7 +11,7 @@ export const chekRoleMiddleware = (role) => {
     try {
       const token = req.headers.authorization.split(" ")[1];
       if (!token) {
-        return res.json({ message: "Unauthorized" });
+        return next(ApiError.unauthorized("Unauthorized"));
       }
 
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
@@ -23,7 +23,7 @@ export const chekRoleMiddleware = (role) => {
       req.user = decoded;
       next();
     } catch (error) {
-      return res.json({ message: error.message });
+      return next(ApiError.badRequest(error.message));
     }
   };
 };

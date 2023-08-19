@@ -1,7 +1,7 @@
 import { decodeToken } from "../helpers/decodeToken.js";
 import { Rating } from "../models/models.js";
 
-export const addRating = async (req, res) => {
+export const addRating = async (req, res, next) => {
   try {
     // Extract the rate from the request body
     const { rate } = req.body;
@@ -26,13 +26,11 @@ export const addRating = async (req, res) => {
           { where: { userId: user.id, deviceId } } // Condition to identify the rating to update
         );
 
-        return res.json({
-          message: "Rating updated successfully." + " " + rate,
+        return res.status(200).json({
+          message: "Rating updated successfully.",
         });
       } catch (error) {
-        return res.json({
-          error: "An error occurred while updating the rating.",
-        });
+        return next(ApiError.badRequest(error.message));
       }
     }
 
@@ -43,18 +41,18 @@ export const addRating = async (req, res) => {
       userId: user.id,
     });
 
-    return res.json({ message: "Rating updated successfully." + " " + rate }); // Return the newly created rating
+    return res.status(200).json({ message: "Rating updated successfully." });
   } catch (error) {
-    return res.json({ error: "An error occurred while adding the rating." });
+    return next(ApiError.badRequest(error.message));
   }
 };
 
-export const getDeviceRating = async (req, res) => {
+export const getDeviceRating = async (req, res, next) => {
   try {
     const { id: deviceId } = req.params;
     const deviceRating = await Rating.findAll({ where: { deviceId } });
-    return res.json(deviceRating);
+    return res.status(200).json(deviceRating);
   } catch (error) {
-    return res.json({ error: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };

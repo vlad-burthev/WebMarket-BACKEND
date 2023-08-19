@@ -3,7 +3,7 @@ import { configDotenv } from "dotenv";
 import { decodeToken } from "../helpers/decodeToken.js";
 configDotenv();
 
-export const addDeviceToOrder = async (req, res) => {
+export const addDeviceToOrder = async (req, res, next) => {
   try {
     // Получаем данные о девайсе из req.body
     const {
@@ -39,13 +39,13 @@ export const addDeviceToOrder = async (req, res) => {
       orderId: order.id,
     });
 
-    return res.json(addedDeviceToOrder);
+    return res.status(200).json(addedDeviceToOrder);
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };
 
-export const deleteDevicesFromOrder = async (req, res) => {
+export const deleteDevicesFromOrder = async (req, res, next) => {
   try {
     // Получаем данные о девайсе из req.body
     const { deviceId, count = 1 } = req.body;
@@ -63,17 +63,20 @@ export const deleteDevicesFromOrder = async (req, res) => {
 
     const existingDevice = await OrderDevice.findOne({ where: deviceId });
     if (!existingDevice) {
-      return res.json({ message: "This device was not found in the cart." });
+      return next(
+        ApiError.badRequest("This device was not found in the cart.")
+      );
     }
 
     const existingDeviceCount = await OrderDevice.count({
       where: { deviceId },
     });
     if (existingDeviceCount < count) {
-      return res.json({
-        message:
-          "You requested to delete more devices than there are in the order.",
-      });
+      return next(
+        ApiError.badRequest(
+          "You requested to delete more devices than there are in the order."
+        )
+      );
     }
 
     // Удаляем указанное количество девайсов с определенным deviceId из корзины
@@ -87,13 +90,13 @@ export const deleteDevicesFromOrder = async (req, res) => {
       }
     }
 
-    return res.json({ message: "Device(s) successfuly destoy" });
+    return res.status(200).json({ message: "Device(s) successfuly destoy" });
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };
 
-export const getOrder = async (req, res) => {
+export const getOrder = async (req, res, next) => {
   try {
     const token = req.headers.authorization;
     const user = decodeToken(token);
@@ -101,8 +104,8 @@ export const getOrder = async (req, res) => {
       where: { userId: user.id },
       include: [{ model: OrderDevice, as: "order_device" }],
     });
-    return res.json(order);
+    return res.satus(200).json(order);
   } catch (error) {
-    return res.json({ message: error.message });
+    return next(ApiError.badRequest(error.message));
   }
 };

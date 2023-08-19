@@ -7,6 +7,7 @@ import { fileURLToPath } from "url";
 import router from "./routes/index.js";
 import * as path from "path";
 import cors from "cors";
+import errorHandler from "./middleware/ErrorHandlingMiddleware.js";
 
 configDotenv(); // connected configDotenv for work with .env
 
@@ -16,20 +17,21 @@ const __dirname = path.dirname(__filename);
 
 const PORT = process.env.PORT || 5000;
 
-const app = express(); //  connect our app to express
+const app = express(); //  Подключаем express
 app.use(express.json());
 app.use(fileUpload({}));
 app.use(cors());
 app.use(express.static(path.resolve(__dirname, "static")));
 app.use("/api", router);
+app.use(errorHandler);
 
 const start = async () => {
   //  func for starting server
   try {
-    await sequelize.authenticate(); //  connected to DB
-    await sequelize.sync(models); //  checks the state of the DB with the data schema (models.js)
+    await sequelize.authenticate(); //  Подключаемся к БД
+    await sequelize.sync(models); //  Проверяет состояние БД со схемой данных (models.js)
 
-    // Start the server on port 5000 and log a message indicating the server has started
+    // Запускаем сервер на порту 5000 и выводим сообщение что сервер запустился
     app.listen(PORT, console.log(`[server] start on ${PORT}`));
   } catch (error) {
     console.log(error);
