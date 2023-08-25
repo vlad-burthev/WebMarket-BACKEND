@@ -1,3 +1,4 @@
+import ApiError from "../error/ApiError.js";
 import { Type } from "../models/models.js";
 
 export const createType = async (req, res, next) => {
@@ -6,7 +7,7 @@ export const createType = async (req, res, next) => {
 
     const existingType = await Type.findOne({ where: { name } });
     if (existingType) {
-      return res.json({ message: "Such type already exists!" });
+      return next(ApiError.badRequest("Such type already exists!"));
     }
 
     const createType = await Type.create({ name });

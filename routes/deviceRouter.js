@@ -12,6 +12,6 @@ const deviceRouter = Router();
 deviceRouter.get("/", getAllDevices);
 deviceRouter.get("/:slug", getOneDevice);
 deviceRouter.post("/", chekRoleMiddleware("ADMIN"), createDevice);
-deviceRouter.delete("/", chekRoleMiddleware("ADMIN"), deleteDevice);
+deviceRouter.post("/delete", chekRoleMiddleware("ADMIN"), deleteDevice);
 
 export default deviceRouter;

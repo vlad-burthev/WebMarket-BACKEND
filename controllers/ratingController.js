@@ -1,3 +1,4 @@
+import ApiError from "../error/ApiError.js";
 import { decodeToken } from "../helpers/decodeToken.js";
 import { Rating } from "../models/models.js";
 
@@ -21,7 +22,7 @@ export const addRating = async (req, res, next) => {
 
     if (existingRate) {
       try {
-        const test = await Rating.update(
+        await Rating.update(
           { rate }, // Update the rate field
           { where: { userId: user.id, deviceId } } // Condition to identify the rating to update
         );

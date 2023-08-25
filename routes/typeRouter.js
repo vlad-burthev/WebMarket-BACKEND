@@ -4,12 +4,12 @@ import {
   deleteType,
   getTypes,
 } from "../controllers/typeController.js";
-import { chekAuthMiddleware } from "../middleware/chekAuthMiddleware.js";
+import { chekRoleMiddleware } from "../middleware/chekRoleMiddleware.js";
 
 const typeRouter = Router();
 
 typeRouter.get("/", getTypes);
-typeRouter.post("/", chekAuthMiddleware, createType);
-typeRouter.delete("/", chekAuthMiddleware, deleteType);
+typeRouter.post("/create", chekRoleMiddleware("ADMIN"), createType);
+typeRouter.post("/delete", chekRoleMiddleware("ADMIN"), deleteType);
 
 export default typeRouter;

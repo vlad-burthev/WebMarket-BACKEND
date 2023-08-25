@@ -1,8 +1,9 @@
 import { configDotenv } from "dotenv";
 import jwt from "jsonwebtoken";
+import ApiError from "../error/ApiError.js";
 configDotenv();
 
-export const chekRoleMiddleware = (role) => {
+export const chekRoleMiddleware = (role, next) => {
   return (req, res, next) => {
     if (req.method === "OPTIONS") {
       next();
@@ -15,15 +16,15 @@ export const chekRoleMiddleware = (role) => {
       }
 
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
-
+      console.log(decoded.role, role);
       if (decoded.role !== role) {
-        return res.json({ message: "Not enough rights" });
+        return next(ApiError.unauthorized("Not enough rights"));
       }
 
       req.user = decoded;
       next();
     } catch (error) {
-      return next(ApiError.badRequest(error.message));
+      return next(ApiError.badRequest("Not enough rights"));
     }
   };
 };

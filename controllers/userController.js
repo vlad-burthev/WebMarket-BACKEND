@@ -1,7 +1,13 @@
 import { configDotenv } from "dotenv";
 import { Op } from "sequelize";
 
-import { Basket, Order, User } from "../models/models.js";
+import {
+  Basket,
+  BasketDevice,
+  Order,
+  OrderDevice,
+  User,
+} from "../models/models.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import ApiError from "../error/ApiError.js";
@@ -95,7 +101,7 @@ export const registration = async (req, res, next) => {
   }
 };
 
-export const check = (req, res) => {
+export const check = (req, res, next) => {
   try {
     const token = generateJwt(
       req.user.id,
@@ -106,6 +112,44 @@ export const check = (req, res) => {
       req.user.lastName
     );
     return res.status(200).json({ token });
+  } catch (error) {
+    return next(ApiError.badRequest(error.message));
+  }
+};
+
+export const deleteUser = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    const existingUser = await User.findOne({ where: { email } });
+
+    if (!existingUser) {
+      return next(ApiError.badRequest("This user does not exist"));
+    }
+    const basketDevice = await BasketDevice.findOne({
+      where: { basketId: basket.id },
+    });
+    const orderDevice = await OrderDevice.findOne({
+      where: { basketId: basket.id },
+    });
+    await orderDevice.destroy();
+    await basketDevice.destroy();
+    const basket = await Basket.findOne({ where: { userId: existingUser.id } });
+    const order = await Order.findOne({ where: { userId: existingUser.id } });
+    await basket.destroy();
+    await order.destroy();
+    await existingUser.destroy();
+
+    return res.status(200).json({ email });
+  } catch (error) {
+    return next(ApiError.badRequest(error.message));
+  }
+};
+
+export const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await User.findAll();
+    return res.json(users);
   } catch (error) {
     return next(ApiError.badRequest(error.message));
   }

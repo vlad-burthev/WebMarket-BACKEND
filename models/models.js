@@ -85,7 +85,7 @@ export const TypeBrand = sequelize.define("type_brand", {
 Device.hasMany(Rating, { foreignKey: "deviceId" });
 Rating.belongsTo(Device, { foreignKey: "deviceId" });
 
-User.hasOne(Basket);
+User.hasOne(Basket, { onDelete: "CASCADE" });
 Basket.belongsTo(User);
 
 User.hasOne(Order);
@@ -94,10 +94,10 @@ Order.belongsTo(User);
 User.hasMany(Rating);
 Rating.belongsTo(User);
 
-Basket.hasMany(BasketDevice, { as: "basket_device" });
+Basket.hasMany(BasketDevice, { as: "basket_device", onDelete: "CASCADE" });
 BasketDevice.belongsTo(Basket);
 
-Order.hasMany(OrderDevice, { as: "order_device" });
+Order.hasMany(OrderDevice, { as: "order_device", onDelete: "CASCADE" });
 OrderDevice.belongsTo(Order);
 
 Type.hasMany(Device);
@@ -106,16 +106,16 @@ Device.belongsTo(Type);
 Brand.hasMany(Device);
 Device.belongsTo(Brand);
 
-Device.hasMany(Rating);
+Device.hasMany(Rating, { onDelete: "CASCADE" });
 Rating.belongsTo(Device);
 
-Device.hasMany(BasketDevice);
+Device.hasMany(BasketDevice, { onDelete: "CASCADE" });
 BasketDevice.belongsTo(Device);
 
-Device.hasMany(OrderDevice);
+Device.hasMany(OrderDevice, { onDelete: "CASCADE" });
 OrderDevice.belongsTo(Device);
 
-Device.hasMany(DeviceInfo, { as: "info" });
+Device.hasMany(DeviceInfo, { as: "info", onDelete: "CASCADE" });
 DeviceInfo.belongsTo(Device);
 
 Type.belongsToMany(Brand, { through: TypeBrand });

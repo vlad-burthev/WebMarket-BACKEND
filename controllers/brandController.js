@@ -1,3 +1,4 @@
+import ApiError from "../error/ApiError.js";
 import { Brand } from "../models/models.js";
 
 export const createBrand = async (req, res, next) => {
@@ -6,7 +7,7 @@ export const createBrand = async (req, res, next) => {
 
     const existingBrand = await Brand.findOne({ where: { name } });
     if (existingBrand) {
-      return res.json({ message: "Such Brand already exists!" });
+      return next(ApiError.badRequest("Such Brand already exists!"));
     }
 
     const createBrand = await Brand.create({ name });

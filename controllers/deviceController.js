@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
 import * as path from "path";
 import { Device, DeviceInfo, Rating } from "../models/models.js";
-
+import ApiError from "../error/ApiError.js";
 import { fileURLToPath } from "url";
 import { json } from "sequelize";
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +21,7 @@ export const createDevice = async (req, res, next) => {
     const { img } = req.files;
     let fileName = uuidv4() + ".jpg";
     img.mv(path.join(__dirname, "..", "static", fileName));
-    const slug = convertToSlug(name);
+    let slug = convertToSlug(name);
 
     const createDevice = await Device.create({
       slug,
@@ -33,8 +33,8 @@ export const createDevice = async (req, res, next) => {
     });
 
     if (info) {
-      info = JSON.parse(info);
-      info.forEach((element) => {
+      const parsedInfo = JSON.parse(info);
+      parsedInfo.forEach((element) => {
         DeviceInfo.create({
           title: element.title,
           description: element.description,
@@ -75,7 +75,7 @@ export const getOneDevice = async (req, res, next) => {
   }
 };
 
-export const getAllDevices = async (req, res) => {
+export const getAllDevices = async (req, res, next) => {
   try {
     const { page = 1, limit = 24, typeId, brandId } = req.query;
     let offset = page * limit - limit;
@@ -112,10 +112,14 @@ export const getAllDevices = async (req, res) => {
   }
 };
 
-export const deleteDevice = async () => {
+export const deleteDevice = async (req, res, next) => {
   try {
-    const { slug } = req.params;
-    const device = await Device.findOne({ where: { slug } });
+    const { name } = req.body;
+
+    const device = await Device.findOne({ where: { name } });
+    if (!device) {
+      return next(ApiError.badRequest("Such device doesn't exist!"));
+    }
     await device.destroy();
     return res
       .status(204)
